@@ -17,4 +17,5 @@ executable scrape
       ,   http-client-tls
       ,   http-types
       ,   scalpel
+      ,   time
   ghc-options: -W
