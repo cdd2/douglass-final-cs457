@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.List.Split
 import Data.Time
 
 import Control.Applicative ((<$>))
@@ -25,7 +26,6 @@ managerSettings = HTTP.tlsManagerSettings {
 
 main :: IO ()
 main = do
-    --
     let fandangoBaseURL :: String
         fandangoBaseURL = "https://www.fandango.com/movies-in-theaters"
 
@@ -35,10 +35,10 @@ main = do
         cinemarkBaseURL = "https://www.cinemark.com/theatres/or-beaverton/century-16-cedar-hills?showDate="
     let cinemarkMovieTimes = getMovieTimesNearMeURLs cinemarkBaseURL daysToSearch start
 
-    putStrLn "Movie Times Near Me"
+    putStrLn "Cinemark"
     mapM_ listCinemarkMovieTimes cinemarkMovieTimes
 
-    putStrLn "All Movies"
+    putStrLn "Fandango"
     listAllMovieNames fandangoBaseURL
 
 listAllMovieNames :: URL -> IO ()
@@ -52,6 +52,7 @@ listAllMovieNames url = do
 
 listCinemarkMovieTimes :: URL -> IO ()
 listCinemarkMovieTimes url = do
+    putStrLn (last (splitOn "=" url))
     manager <- Just <$> HTTP.newManager managerSettings
     images <- scrapeURLWithConfig (def { manager }) url $ texts cinemarkMovieTimeSelector
     maybe printError printImages images
@@ -65,6 +66,7 @@ fandangoMovieTitleSelector = "h4" @: [hasClass "mlp__listings-section-item-title
 cinemarkMovieTimeSelector :: Selector
 cinemarkMovieTimeSelector = "p" @: [hasClass "no-showtimes"]
 
-getMovieTimesNearMeURLs :: String -> Int -> UTCTime -> [String]
-getMovieTimesNearMeURLs baseURL daysToSearch start = take daysToSearch
-    [baseURL ++ (formatTime defaultTimeLocale "%F" (addUTCTime (i * 3600) start)) | i <- [1..]]
+getMovieTimesNearMeURLs :: String -> NominalDiffTime -> UTCTime -> [String]
+getMovieTimesNearMeURLs baseURL 0 start = [baseURL ++ (formatTime defaultTimeLocale "%F" start)]
+getMovieTimesNearMeURLs baseURL n start = [baseURL ++ (formatTime defaultTimeLocale "%F" (addUTCTime (n * 86400) start))]
+    ++ (getMovieTimesNearMeURLs baseURL (n - 1) start)

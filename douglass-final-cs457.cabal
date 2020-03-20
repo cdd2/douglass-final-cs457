@@ -18,4 +18,5 @@ executable scrape
       ,   http-types
       ,   scalpel
       ,   time
+      ,   split
   ghc-options: -W
