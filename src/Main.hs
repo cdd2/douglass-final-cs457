@@ -44,21 +44,21 @@ main = do
 listAllMovieNames :: URL -> IO ()
 listAllMovieNames url = do
     manager <- Just <$> HTTP.newManager managerSettings
-    images <- scrapeURLWithConfig (def { manager }) url $ texts fandangoMovieTitleSelector
-    maybe printError printImages images
+    titles <- scrapeURLWithConfig (def { manager }) url $ texts fandangoMovieTitleSelector
+    maybe printError printTitles titles
     where
         printError = putStrLn "ERROR: Could not scrape the URL!"
-        printImages = mapM_ putStrLn
+        printTitles = mapM_ putStrLn
 
 listCinemarkMovieTimes :: URL -> IO ()
 listCinemarkMovieTimes url = do
     putStrLn (last (splitOn "=" url))
     manager <- Just <$> HTTP.newManager managerSettings
-    images <- scrapeURLWithConfig (def { manager }) url $ texts cinemarkMovieTimeSelector
-    maybe printError printImages images
+    titles <- scrapeURLWithConfig (def { manager }) url $ texts cinemarkMovieTimeSelector
+    maybe printError printTitles titles
     where
         printError = putStrLn "ERROR: Could not scrape the URL!"
-        printImages = mapM_ putStrLn
+        printTitles = mapM_ putStrLn
 
 fandangoMovieTitleSelector :: Selector
 fandangoMovieTitleSelector = "h4" @: [hasClass "mlp__listings-section-item-title"]
